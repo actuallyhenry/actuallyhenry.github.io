@@ -1,0 +1,20 @@
+<a
+  href="#"
+  onclick="handleClick(this)"
+  data-url="Cooking/book1.pdf">Click Me</a>
+
+<embed
+  id="viewer"
+  src=""
+  type="application/pdf"
+  frameBorder="0"
+  scrolling="auto"
+  height="800px"
+  width="100%"></embed>
+
+<script>
+  const handleClick = (target) => {
+    const cwd = window.location.href.substring(0, window.location.href.lastIndexOf("/"));
+    document.getElementById("viewer").src = `${cwd}/${target.dataset.url}`
+  }
+</script>
