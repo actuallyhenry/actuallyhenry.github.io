@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>To-Do List</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px 16px;
+      background-color: #f9f9fb;
+      color: #111;
+    }
+    h1 {
+      font-size: 28px;
+      margin: 0 0 16px 0;
+    }
+    form {
+      display: -webkit-flex;
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      -webkit-flex: 1;
+      flex: 1;
+      height: 52px;
+      padding: 0 14px;
+      font-size: 18px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      background: #fff;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #0066c0;
+    }
+    button {
+      height: 52px;
+      padding: 0 20px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #add-btn {
+      background-color: #0066c0;
+      color: #fff;
+    }
+    #add-btn:active {
+      background-color: #004c91;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    li {
+      display: -webkit-flex;
+      display: flex;
+      -webkit-align-items: center;
+      align-items: center;
+      -webkit-justify-content: space-between;
+      justify-content: space-between;
+      background: #fff;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      min-height: 60px;
+    }
+    .task-text {
+      -webkit-flex: 1;
+      flex: 1;
+      font-size: 20px;
+      line-height: 1.4;
+      padding: 8px 12px 8px 0;
+      word-break: break-word;
+    }
+    .done {
+      text-decoration: line-through;
+      color: #888;
+    }
+    .del-btn {
+      height: 46px;
+      padding: 0 16px;
+      font-size: 16px;
+      background-color: #f0f0f0;
+      color: #b12704;
+      border: 1px solid #ccc;
+    }
+    .del-btn:active {
+      background-color: #e2e2e2;
+    }
+    #status {
+      margin-top: 16px;
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>To-Do List</h1>
+  <form id="todo-form">
+    <input id="todo-input" type="text" placeholder="Add a task..." aria-label="Add a task" required />
+    <button id="add-btn" type="submit">Add</button>
+  </form>
+  <ul id="todo-list"></ul>
+  <div id="status"></div>
+
+  <script>
+    var form = document.getElementById('todo-form');
+    var input = document.getElementById('todo-input');
+    var list = document.getElementById('todo-list');
+    var statusEl = document.getElementById('status');
+
+    var todos = [];
+    var storageAvailable = true;
+
+    try {
+      var saved = localStorage.getItem('kindle_todos');
+      if (saved) {
+        todos = JSON.parse(saved);
+      }
+    } catch (e) {
+      storageAvailable = false;
+      statusEl.textContent = 'Note: Local storage is disabled in this browser view; tasks will reset on close.';
+    }
+
+    function save() {
+      if (!storageAvailable) return;
+      try {
+        localStorage.setItem('kindle_todos', JSON.stringify(todos));
+      } catch (e) {
+        statusEl.textContent = 'Could not save tasks to device storage.';
+      }
+    }
+
+    function render() {
+      list.innerHTML = '';
+      for (var i = 0; i < todos.length; i++) {
+        (function (index) {
+          var todo = todos[index];
+          var li = document.createElement('li');
+
+          var span = document.createElement('span');
+          span.className = 'task-text' + (todo.done ? ' done' : '');
+          span.textContent = todo.text;
+          span.onclick = function () {
+            todos[index].done = !todos[index].done;
+            save();
+            render();
+          };
+
+          var del = document.createElement('button');
+          del.type = 'button';
+          del.className = 'del-btn';
+          del.textContent = 'Delete';
+          del.onclick = function () {
+            todos.splice(index, 1);
+            save();
+            render();
+          };
+
+          li.appendChild(span);
+          li.appendChild(del);
+          list.appendChild(li);
+        })(i);
+      }
+    }
+
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      var text = input.value.replace(/^\s+|\s+$/g, '');
+      if (!text) return;
+      todos.push({ text: text, done: false });
+      input.value = '';
+      save();
+      render();
+    };
+
+    render();
+  </script>
+</body>
+</html>
